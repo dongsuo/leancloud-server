@@ -20,6 +20,20 @@ app.use(views(path.join(__dirname, 'views')));
 // 设置静态资源目录
 app.use(statics(path.join(__dirname, 'public')));
 
+const allowCrossDomain = async function(ctx, next) {
+  ctx.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, Content-Length, X-Requested-With,Access-Control-Allow-Origin');
+  ctx.set('Access-Control-Allow-Origin', '*');
+  ctx.set('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+  if ('OPTIONS' === ctx.method) {
+    ctx.body = {}
+    ctx.status = 200
+  } else {
+    await next();
+  }
+};
+app.use(allowCrossDomain);
+
+
 const router = new Router();
 app.use(router.routes());
 
@@ -33,10 +47,19 @@ app.use(async (ctx, next) => {
   var cql = `select * from _User where objectId = '${ctx.request.header['x-l-token']}'`
 
   await AV.Query.doCloudQuery(cql).then( async result => {
-    ctx.userInfo = JSON.parse(JSON.stringify(result.results[0]))
-    await next()
+    if(!result.results[0]) {
+      ctx.body = {
+        code: 70001,
+        message: 'No Token'
+      }
+      await next()
+    } else {
+      ctx.userInfo = JSON.parse(JSON.stringify(result.results[0]))
+      await next()
+    }
+    
   }, (error) => {
-    console.log(error)
+    console.log('error')
     ctx.body = {
       code: 70001,
       message: 'No Token'
