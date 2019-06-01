@@ -21,7 +21,7 @@ app.use(views(path.join(__dirname, 'views')));
 app.use(statics(path.join(__dirname, 'public')));
 
 const allowCrossDomain = async function(ctx, next) {
-  ctx.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, Content-Length, X-Requested-With,Access-Control-Allow-Origin');
+  ctx.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, Content-Length, X-Requested-With,Access-Control-Allow-Origin,x-avoscloud-application-id,x-avoscloud-application-key');
   ctx.set('Access-Control-Allow-Origin', '*');
   ctx.set('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
   if ('OPTIONS' === ctx.method) {
@@ -42,43 +42,16 @@ app.use(AV.koa());
 
 app.use(bodyParser());
 
-app.use(async (ctx, next) => {
-  const query = new AV.Query('_User');
-  var cql = `select * from _User where objectId = '${ctx.request.header['x-l-token']}'`
-
-  await AV.Query.doCloudQuery(cql).then( async result => {
-    if(!result.results[0]) {
-      ctx.body = {
-        code: 70001,
-        message: 'No Token'
-      }
-      await next()
-    } else {
-      ctx.userInfo = JSON.parse(JSON.stringify(result.results[0]))
-      await next()
-    }
-    
-  }, (error) => {
-    console.log('error')
-    ctx.body = {
-      code: 70001,
-      message: 'No Token'
-    }
-  })
-})
-
 router.get('/', async function(ctx) {
-  
+
   ctx.state.currentTime = new Date();
   await ctx.render('./index.ejs');
 });
 
 // 可以将一类的路由单独保存在一个文件中
-app.use(require('./routes/todos').routes());
-app.use(require('./routes/isbnBook').routes());
-app.use(require('./routes/addBook').routes());
-app.use(require('./routes/userCollection').routes());
-app.use(require('./routes/searchBook').routes());
+app.use(require('./routes/sol').routes());
+app.use(require('./routes/proxyNasa').routes());
+
 
 
 module.exports = app;
