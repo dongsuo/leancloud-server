@@ -1,11 +1,9 @@
-const http = require("https");
 const Router = require("koa-router");
 const AV = require("leanengine");
 
 const router = new Router({ prefix: "/user" });
 
 router.post("/signup", async ctx => {
-  console.log(ctx.request.body);
   const { userName, password, email } = ctx.request.body;
   if (!userName || !password || !email) {
     ctx.body = {
@@ -37,17 +35,15 @@ router.post("/signup", async ctx => {
 });
 
 router.post("/login", async ctx => {
-  // console.log(ctx.request.body);
   const { userName, password } = ctx.request.body;
-
   if (!userName || !password) {
     ctx.body = {
         code: 50000,
         message: '登录信息不完整'
     };
+    return
   }
-  await AV.User.logIn(userName, password).then(loggedInUser => {
-    console.log(loggedInUser._sessionToken)
+   await AV.User.logIn(userName, password).then(loggedInUser => {
     ctx.body = {
       code: 20000,
       data: {
@@ -56,7 +52,7 @@ router.post("/login", async ctx => {
       message: '登录成功'
     };
   }, error => {
-    console.log('error',error.message)
+    console.error('error',error.message)
       ctx.body = {
         code: 50000,
         message: error.message

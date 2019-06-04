@@ -9,6 +9,7 @@ const views = require('koa-views');
 const statics = require('koa-static');
 const bodyParser = require('koa-bodyparser');
 
+const auth = require('./middleware/auth')
 // 加载云函数定义，你可以将云函数拆分到多个文件方便管理，但需要在主文件中加载它们
 require('./cloud');
 
@@ -21,7 +22,7 @@ app.use(views(path.join(__dirname, 'views')));
 app.use(statics(path.join(__dirname, 'public')));
 
 const allowCrossDomain = async function(ctx, next) {
-  ctx.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, Content-Length, X-Requested-With,Access-Control-Allow-Origin,x-avoscloud-application-id,x-avoscloud-application-key');
+  ctx.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, Content-Length, X-Requested-With,Access-Control-Allow-Origin,x-avoscloud-application-id,x-avoscloud-application-key, ds-token');
   ctx.set('Access-Control-Allow-Origin', '*');
   ctx.set('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
   if ('OPTIONS' === ctx.method) {
@@ -33,12 +34,13 @@ const allowCrossDomain = async function(ctx, next) {
 };
 app.use(allowCrossDomain);
 
-
 const router = new Router();
 app.use(router.routes());
 
 // 加载云引擎中间件
 app.use(AV.koa());
+
+app.use(auth)
 
 app.use(bodyParser());
 
@@ -52,6 +54,7 @@ router.get('/', async function(ctx) {
 app.use(require('./routes/sol').routes());
 app.use(require('./routes/user').routes());
 app.use(require('./routes/proxyNasa').routes());
+app.use(require('./routes/exesql').routes());
 
 
 
