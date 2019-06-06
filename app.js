@@ -55,6 +55,10 @@ app.use(require('./routes/sol').routes());
 app.use(require('./routes/user').routes());
 app.use(require('./routes/proxyNasa').routes());
 app.use(require('./routes/exesql').routes());
+app.use(require('./routes/chart').routes());
+app.use(require('./routes/dashboard').routes());
+app.use(require('./routes/chartDashMap').routes());
+
 
 
 
