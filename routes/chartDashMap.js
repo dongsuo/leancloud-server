@@ -44,7 +44,7 @@ router.get('/chartbydashboard', async ctx => {
     })
     await Promise.all(queryList).then(chartList => {
       ctx.body = {
-        code: 2000,
+        code: 20000,
         data: chartList
       }
     }).catch(error => {

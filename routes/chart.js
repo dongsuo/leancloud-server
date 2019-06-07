@@ -41,6 +41,7 @@ router.put("/", async ctx => {
   chart.set("chart_name", ctx.request.body.chart_name);
   chart.set("desc", ctx.request.body.desc);
   chart.set("content", ctx.request.body.content);
+  chart.set("creator", ctx.currentUser.id);
   chart.set("isPrivate", false);
   chart.set("status", 1);
 
@@ -64,24 +65,58 @@ router.put("/", async ctx => {
 
 router.get("/", async ctx => {
   const chartId = ctx.query.id;
-  var query = new AV.Query('Chart');
-  await query.get(chartId).then(function (chart) {
-    // 成功获得实例
-    ctx.body = {
-      code: 20000,
-      data: chart
-    };
-  }, function (error) {
-    ctx.body = {
-      code: 40004,
-      message: error
-    };
-  });
+  var query = new AV.Query("Chart");
+  await query.get(chartId).then(
+    function(chart) {
+      // 成功获得实例
+      ctx.body = {
+        code: 20000,
+        data: chart
+      };
+    },
+    function(error) {
+      ctx.body = {
+        code: 40004,
+        message: error
+      };
+    }
+  );
+});
+
+router.get("/list", async ctx => {
+  const uid = ctx.currentUser.id;
+  var query = new AV.Query("Chart");
+  query.equalTo("creator", uid);
+  await query.find().then(
+    function(chart) {
+      // 成功获得实例
+      chart = chart.map(item => {
+        return {
+          chart_id: item.get("objectId"),
+          creator: item.get("creator"),
+          desc: item.get("desc"),
+          chart_name: item.get("chart_name"),
+          status: item.get("status"),
+          isPrivate: item.get("isPrivate")
+        };
+      });
+      ctx.body = {
+        code: 20000,
+        data: chart.filter(item => item.status !== 0)
+      };
+    },
+    function(error) {
+      ctx.body = {
+        code: 40004,
+        message: error
+      };
+    }
+  );
 });
 
 router.delete("/", async ctx => {
   const chartId = ctx.request.body.id;
-  var chart = AV.Object.createWithoutData('Chart', chartId);
+  var chart = AV.Object.createWithoutData("Chart", chartId);
   chart.set("status", 0);
   await chart.save().then(
     function(chart) {
@@ -90,7 +125,7 @@ router.delete("/", async ctx => {
         code: 20000,
         data: {
           success: true
-         }
+        }
       };
     },
     function(error) {
