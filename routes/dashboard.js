@@ -35,8 +35,8 @@ router.post("/", async ctx => {
 });
 
 router.put("/", async ctx => {
-  const chartId = ctx.request.body.id;
-  const dashboard = AV.Object.createWithoutData("Dashboard", chartId);
+  const dbId = ctx.request.body.objectId;
+  const dashboard = AV.Object.createWithoutData("Dashboard", dbId);
   dashboard.set("name", ctx.request.body.name);
   dashboard.set("desc", ctx.request.body.desc);
   dashboard.set("content", ctx.request.body.content);
@@ -62,9 +62,9 @@ router.put("/", async ctx => {
 });
 
 router.get("/", async ctx => {
-  const chartId = ctx.query.id;
+  const dbId = ctx.query.id;
   var query = new AV.Query('Dashboard');
-  await query.get(chartId).then(function (dashboard) {
+  await query.get(dbId).then(function (dashboard) {
     // 成功获得实例
     ctx.body = {
       code: 20000,
@@ -98,8 +98,8 @@ router.get("/list", async ctx => {
 });
 
 router.delete("/", async ctx => {
-  const chartId = ctx.request.body.id;
-  var dashboard = AV.Object.createWithoutData('Dashboard', chartId);
+  const dbId = ctx.request.body.id;
+  var dashboard = AV.Object.createWithoutData('Dashboard', dbId);
   dashboard.set("status", 0);
   await dashboard.save().then(
     function(dashboard) {

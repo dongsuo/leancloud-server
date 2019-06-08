@@ -11,15 +11,16 @@ module.exports = async function auth(ctx, next) {
     try {
       await AV.User.become(sessionToken).then(function(user) {
         ctx.currentUser = user;
-        console.log(ctx.currentUser.id)
+        // console.log(ctx.currentUser.id)
       });
-      await next();
     } catch (error) {
+      console.log(error)
       ctx.body = {
         code: 40003,
         message: "登录失败"
       };
     }
+    await next();
   } else {
     ctx.body = {
       code: 40003,
