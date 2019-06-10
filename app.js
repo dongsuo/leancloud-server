@@ -40,6 +40,18 @@ app.use(router.routes());
 // 加载云引擎中间件
 app.use(AV.koa());
 
+app.use(async (ctx, next) => {
+  try {
+    await next();
+  } catch (err) {
+    ctx.status = err.status || 500;
+    ctx.body = {
+      code: err.code || 50000,
+      message: 'Internal Server Error.'
+    };
+    ctx.app.emit('error', err, ctx);
+  }
+});
 app.use(auth)
 
 app.use(bodyParser());

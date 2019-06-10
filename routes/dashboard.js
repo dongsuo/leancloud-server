@@ -16,22 +16,11 @@ router.post("/", async ctx => {
   dashboard.set("creator", ctx.currentUser.id);
   dashboard.set("isPrivate", false);
   dashboard.set("status", 1);
-  await dashboard.save().then(
-    function(dashboard) {
-      console.log("objectId is " + dashboard.id);
-      ctx.body = {
-        code: 20000,
-        data: { id: dashboard.id }
-      };
-    },
-    function(error) {
-      ctx.body = {
-        code: 50000,
-        message: error
-      };
-      console.error(error);
-    }
-  );
+  const db = await dashboard.save()
+  ctx.body = {
+    code: 20000,
+    data: { id: db.id }
+  };
 });
 
 router.put("/", async ctx => {
@@ -42,83 +31,45 @@ router.put("/", async ctx => {
   dashboard.set("content", ctx.request.body.content);
   dashboard.set("isPrivate", false);
   dashboard.set("status", 1);
-
-  await dashboard.save().then(
-    function(dashboard) {
-      console.log("objectId is " + dashboard.id);
-      ctx.body = {
-        code: 20000,
-        data: { id: dashboard.id }
-      };
-    },
-    function(error) {
-      ctx.body = {
-        code: 50000,
-        message: error
-      };
-      console.error(error);
-    }
-  );
+  const db = await dashboard.save()
+  ctx.body = {
+    code: 20000,
+    data: { id: db.id }
+  };
 });
 
 router.get("/", async ctx => {
   const dbId = ctx.query.id;
   var query = new AV.Query('Dashboard');
-  await query.get(dbId).then(function (dashboard) {
-    // 成功获得实例
-    ctx.body = {
-      code: 20000,
-      data: dashboard
-    };
-  }, function (error) {
-    ctx.body = {
-      code: 40004,
-      message: error
-    };
-  });
+  ctx.body = {
+    code: 20000,
+    data: await query.get(dbId)
+  };
 });
 
 router.get("/list", async ctx => {
   const uid = ctx.currentUser.id;
   var query = new AV.Query('Dashboard');
   query.equalTo('creator', uid)
-  await query.find().then(function (dashboard) {
-    // 成功获得实例
-    console.log(dashboard)
-    ctx.body = {
-      code: 20000,
-      data: dashboard
-    };
-  }, function (error) {
-    ctx.body = {
-      code: 40004,
-      message: error
-    };
-  });
+  query.equalTo('status', 1)
+  const dbs = await query.find()
+  ctx.body = {
+    code: 20000,
+    data: dbs
+  };
 });
 
 router.delete("/", async ctx => {
   const dbId = ctx.request.body.id;
   var dashboard = AV.Object.createWithoutData('Dashboard', dbId);
   dashboard.set("status", 0);
-  await dashboard.save().then(
-    function(dashboard) {
-      console.log("objectId is " + dashboard.id);
-      ctx.body = {
-        code: 20000,
-        data: {
-          success: true
-         }
-      };
-    },
-    function(error) {
-      ctx.body = {
-        code: 50000,
-        message: error
-      };
-      console.error(error);
+  await dashboard.save()
+  ctx.body = {
+    code: 20000,
+    data: {
+      success: true
     }
-  );
+  };
 });
 
 module.exports = router;

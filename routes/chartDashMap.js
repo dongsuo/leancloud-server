@@ -13,28 +13,19 @@ router.post("/", async ctx => {
 
   const chartQuery = new AV.Query("Chart");
   const dashboardQuery = new AV.Query("Dashboard");
-  await Promise.all([
+  const resp = await Promise.all([
     chartQuery.get(chart_id),
     dashboardQuery.get(dashboard_id)
-  ])
-    .then(resp => {
-      chartDashMap.set("chart", resp[0]);
-      chartDashMap.set("dashboard", resp[1]);
-      chartDashMap.save();
-      ctx.body = {
-        code: 20000,
-        data: {
-          success: true
-        }
-      };
-    })
-    .catch(error => {
-      console.log(error);
-      ctx.body = {
-        code: 50000,
-        message: error
-      };
-    });
+  ]);
+  chartDashMap.set("chart", resp[0]);
+  chartDashMap.set("dashboard", resp[1]);
+  await chartDashMap.save();
+  ctx.body = {
+    code: 20000,
+    data: {
+      success: true
+    }
+  };
 });
 
 router.post("/unmap", async ctx => {
@@ -45,28 +36,16 @@ router.post("/unmap", async ctx => {
   // console.log(dashboard, chart)
   query.equalTo("dashboard", dashboard);
   query.equalTo("chart", chart);
-  await query.find().then(async maps => {
-    await AV.Query.doCloudQuery(
-      `delete from ChartDashMap where objectId="${maps[0].get("objectId")}"`
-    ).then(
-      function() {
-        // 删除成功
-        ctx.body = {
-          code: 20000,
-          data: {
-            success: true
-          }
-        };
-      },
-      function(error) {
-        // 异常处理
-        ctx.body = {
-          code: 50000,
-          message: error
-        };
-      }
-    );
-  });
+  const maps = await query.find();
+  await AV.Query.doCloudQuery(
+    `delete from ChartDashMap where objectId="${maps[0].get("objectId")}"`
+  );
+  ctx.body = {
+    code: 20000,
+    data: {
+      success: true
+    }
+  };
 });
 
 router.get("/chartbydashboard", async ctx => {
@@ -74,33 +53,16 @@ router.get("/chartbydashboard", async ctx => {
   const dashboard = AV.Object.createWithoutData("Dashboard", dashboardId);
   const query = new AV.Query("ChartDashMap");
   query.equalTo("dashboard", dashboard);
-  await query
-    .find()
-    .then(async maps => {
-      const queryList = maps.map((map, i, a) => {
-        const chartQuery = new AV.Query("Chart");
-        return chartQuery.get(map.get("chart").id);
-      });
-      await Promise.all(queryList)
-        .then(chartList => {
-          ctx.body = {
-            code: 20000,
-            data: chartList
-          };
-        })
-        .catch(error => {
-          ctx.body = {
-            code: 50000,
-            message: error
-          };
-        });
-    })
-    .catch(error => {
-      ctx.body = {
-        code: 50000,
-        message: error
-      };
-    });
+  const maps = await query.find();
+  const queryList = maps.map((map, i, a) => {
+    const chartQuery = new AV.Query("Chart");
+    return chartQuery.get(map.get("chart").id);
+  });
+
+  ctx.body = {
+    code: 20000,
+    data: await Promise.all(queryList)
+  };
 });
 
 module.exports = router;

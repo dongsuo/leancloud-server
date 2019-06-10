@@ -7,8 +7,8 @@ router.post("/signup", async ctx => {
   const { userName, password, email } = ctx.request.body;
   if (!userName || !password || !email) {
     ctx.body = {
-        code: 50000,
-        message: '注册信息不完整'
+      code: 50000,
+      message: "注册信息不完整"
     };
   }
   // 新建 AVUser 对象实例
@@ -19,45 +19,44 @@ router.post("/signup", async ctx => {
   user.setPassword(password);
   // 设置邮箱
   user.setEmail(email);
-  await user.signUp().then(loggedInUser => {
-      ctx.body = {
-        code: 20000,
-        message: '注册成功'
-      };
-    }, error => {
-      console.log(error.message)
-      ctx.body = {
-        code: 50000,
-        message: error.message
-      };
-    }
-  );
+  try {
+    await user.signUp();
+    ctx.body = {
+      code: 20000,
+      message: "注册成功"
+    };
+  } catch (error) {
+    ctx.body = {
+      code: 50000,
+      message: error
+    };
+  }
 });
 
 router.post("/login", async ctx => {
   const { userName, password } = ctx.request.body;
   if (!userName || !password) {
     ctx.body = {
-        code: 50000,
-        message: '登录信息不完整'
+      code: 50000,
+      message: "登录信息不完整"
     };
-    return
+    return;
   }
-   await AV.User.logIn(userName, password).then(loggedInUser => {
+  try {
+    const user = await AV.User.logIn(userName, password)
     ctx.body = {
       code: 20000,
       data: {
-        token: loggedInUser._sessionToken
+        token: user._sessionToken
       },
-      message: '登录成功'
+      message: "登录成功"
     };
-  }, error => {
-    console.error('error',error.message)
-      ctx.body = {
-        code: 50000,
-        message: error.message
-      }
-  })
+  } catch (error) {
+    ctx.body = {
+      code: 50000,
+      message: error.message
+    };
+  }
 });
 
 module.exports = router;

@@ -9,10 +9,7 @@ module.exports = async function auth(ctx, next) {
     await next();
   } else if (sessionToken) {
     try {
-      await AV.User.become(sessionToken).then(function(user) {
-        ctx.currentUser = user;
-        // console.log(ctx.currentUser.id)
-      });
+      ctx.currentUser = await AV.User.become(sessionToken)
     } catch (error) {
       console.log(error)
       ctx.body = {
@@ -24,7 +21,7 @@ module.exports = async function auth(ctx, next) {
   } else {
     ctx.body = {
       code: 40003,
-      message: "未登录"
+      message: "未登录，禁止访问"
     };
   }
 };

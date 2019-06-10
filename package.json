@@ -23,6 +23,7 @@
     "npm": "^6.9.0"
   },
   "devDependencies": {
+    "eslint": "^5.16.0",
     "nodemon": "^1.11.0"
   },
   "engines": {
