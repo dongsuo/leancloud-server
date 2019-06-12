@@ -65,4 +65,21 @@ router.get("/chartbydashboard", async ctx => {
   };
 });
 
+router.get("/dbBychart", async ctx => {
+  const chartId = ctx.query.id;
+  const chart = AV.Object.createWithoutData("Chart", chartId);
+  const query = new AV.Query("ChartDashMap");
+  query.equalTo("chart", chart);
+  const maps = await query.find();
+  const queryList = maps.map((map, i, a) => {
+    const dbQuery = new AV.Query("Dashboard");
+    return dbQuery.get(map.get("dashboard").id);
+  });
+
+  ctx.body = {
+    code: 20000,
+    data: await Promise.all(queryList)
+  };
+});
+
 module.exports = router;
