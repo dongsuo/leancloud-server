@@ -65,7 +65,7 @@ router.get("/chartbydashboard", async ctx => {
   };
 });
 
-router.get("/dbBychart", async ctx => {
+router.get("/dbbychart", async ctx => {
   const chartId = ctx.query.id;
   const chart = AV.Object.createWithoutData("Chart", chartId);
   const query = new AV.Query("ChartDashMap");
