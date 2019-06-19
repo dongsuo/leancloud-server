@@ -78,7 +78,11 @@ router.get("/list", async ctx => {
   orderQuery.equalTo('user', uid)
   const [dbs, orders] = await Promise.all([query.find(), orderQuery.find()])
 
-  const order = orders[0].get('order').split('|')
+  let order = []
+
+  if(orders[0]) {
+    order = orders[0].get('order').split('|')
+  }
   ctx.body = {
     code: 20000,
     data: {
