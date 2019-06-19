@@ -26,24 +26,39 @@ router.get("/", async ctx => {
   console.log("建立连接");
   // get value from apigw
   console.log(ctx.query);
-  const querySql = ctx.query.sql;
-  let queryResult;
-  let code
-  if (!querySql) {
+  if (!ctx.query.sql) {
     ctx.body = {
-      code: 50000,
+      code: 40002,
       message: "参数错误"
     };
-  } else {
-    try {
-      queryResult = await wrapPromise(connection, querySql);
-      code = 20000
-    } catch (error) {
-      code = 50000
-      queryResult = error;
-    }
-    console.log("数据获取");
+    return;
   }
+  const querySql = ctx.query.sql.toLowerCase();
+  if (
+    querySql.indexOf("drop") >= 0 ||
+    querySql.indexOf("delete") >= 0 ||
+    querySql.indexOf("insert") >= 0 ||
+    querySql.indexOf("truncate") >= 0 ||
+    querySql.indexOf("update") >= 0 ||
+    querySql.indexOf("alter") >= 0 ||
+    querySql.indexOf("shutdown") >= 0
+  ) {
+    ctx.body = {
+      code: 40003,
+      message: "STOP!!!"
+    };
+    return;
+  }
+  let queryResult;
+  let code;
+  try {
+    queryResult = await wrapPromise(connection, querySql);
+    code = 20000;
+  } catch (error) {
+    code = 50000;
+    queryResult = error;
+  }
+  console.log("数据获取");
   connection.end();
   ctx.body = {
     code: 20000,
