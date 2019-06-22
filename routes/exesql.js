@@ -21,7 +21,6 @@ router.get("/", async ctx => {
     password: process.env.DB_PASS,
     database: process.env.DB_BASE
   });
-  connection.connect();
 
   console.log("建立连接");
   // get value from apigw
@@ -49,21 +48,22 @@ router.get("/", async ctx => {
     };
     return;
   }
-  let queryResult;
-  let code;
+  connection.connect();
   try {
-    queryResult = await wrapPromise(connection, querySql);
-    code = 20000;
+    const queryResult = await wrapPromise(connection, querySql);
+    ctx.body = {
+      code: 20000,
+      data: queryResult
+    };
   } catch (error) {
-    code = 50000;
-    queryResult = error;
+    ctx.body = {
+      code: 50000,
+      message: error.sqlMessage
+    };
   }
   console.log("数据获取");
   connection.end();
-  ctx.body = {
-    code: 20000,
-    data: queryResult
-  };
+
 });
 
 module.exports = router;
