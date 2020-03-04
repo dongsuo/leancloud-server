@@ -71,14 +71,13 @@ router.get("/dbbychart", async ctx => {
   const query = new AV.Query("ChartDashMap");
   query.equalTo("chart", chart);
   const maps = await query.find();
-  const queryList = maps.map((map, i, a) => {
-    const dbQuery = new AV.Query("Dashboard");
-    return dbQuery.get(map.get("dashboard").id);
-  });
+  const dbIds = maps.map(map => {
+    return map.get("dashboard").id
+  })
 
   ctx.body = {
     code: 20000,
-    data: await Promise.all(queryList)
+    data: dbIds
   };
 });
 

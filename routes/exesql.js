@@ -21,10 +21,8 @@ router.get("/", async ctx => {
     password: process.env.DB_PASS,
     database: process.env.DB_BASE
   });
-
-  console.log("建立连接");
+  // console.log("建立连接");
   // get value from apigw
-  console.log(ctx.query);
   if (!ctx.query.sql) {
     ctx.body = {
       code: 40002,
@@ -56,12 +54,13 @@ router.get("/", async ctx => {
       data: queryResult
     };
   } catch (error) {
+    console.log(error)
     ctx.body = {
       code: 50000,
       message: error.sqlMessage
     };
   }
-  console.log("数据获取");
+  // console.log("数据获取");
   connection.end();
 
 });
