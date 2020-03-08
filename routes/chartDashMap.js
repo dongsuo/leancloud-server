@@ -54,14 +54,15 @@ router.get("/chartbydashboard", async ctx => {
   const query = new AV.Query("ChartDashMap");
   query.equalTo("dashboard", dashboard);
   const maps = await query.find();
-  const queryList = maps.map((map, i, a) => {
-    const chartQuery = new AV.Query("Chart");
-    return chartQuery.get(map.get("chart").id);
+  const queryIds = maps.map((map, i, a) => {
+    return map.get("chart").id
   });
+  const chartQuery = new AV.Query("Chart");
+  const charts = chartQuery.containedIn('objectId', queryIds)
 
   ctx.body = {
     code: 20000,
-    data: await Promise.all(queryList)
+    data: await charts.find()
   };
 });
 
